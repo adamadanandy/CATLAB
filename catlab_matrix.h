@@ -103,9 +103,27 @@ typedef struct _tagCatZMatrix {
     int                     *ptrind2;
 } cat_zmat, *ptr_cat_zmat;
 
-ptr_cat_workspace cat_matz_csc_mldivide_alloc();
-void        cat_matz_csc_mldivide_dealloc(ptr_cat_workspace psp);
-void        cat_matz_csc_mldivide(ptr_cat_zmat matA, cat_z* ivec, cat_z* ovec, ptr_cat_workspace pworkspace);
+
+void cat_zmat_AXPBY(double _Complex a, ptr_cat_zmat matx,
+            double _Complex b, ptr_cat_zmat maty);
+void cat_zmat_matrixCC2GE(ptr_cat_zmat tmat);
+ptr_cat_mat cat_CSCMatConstructor(cat_flag matdatatype, int row, int col, 
+            int* ai, int* aj, void* av);
+/***********************************************************************/
+//routines like sparse blas
+void              cat_zcscaxpby(int m, const void* alpha,
+                        const cat_z *x, const int *ix, const int *jx,
+                        const void* beta, cat_z **y, int **iy, int** jy);
+//sparse blas part, if MKL is used, it'll be redirect to mkl
+void              cat_zcscgemv(CBLAS_TRANSPOSE TransA, int m,
+                        const cat_z *a, const int *ia, const int *ja,
+                        const cat_z *x, cat_z* y);
+/***********************************************************************/
+
+ptr_cat_workspace cat_mat_csc_mldivide_alloc();
+void              cat_mat_csc_mldivide_dealloc(ptr_cat_workspace psp);
+void              cat_matz_csc_mldivide(ptr_cat_zmat matA, cat_z* ivec,
+                        cat_z* ovec, ptr_cat_workspace pworkspace);
 
 ptr_cat_mat cat_matrixDuplicate(ptr_cat_mat smat);
 ptr_cat_mat cat_GMatConstructor(cat_flag matdatatype, int dimension, int* shape);
@@ -137,4 +155,5 @@ void cat_matrix_print_d_2d(ptr_cat_dmat smat);
 void cat_matrix_print_c_2d(ptr_cat_cmat smat);
 void cat_matrix_print_z_2d(ptr_cat_zmat smat);
 void cat_matrix_print(ptr_cat_mat smat);
+
 #endif//__CATLAB_MATRIX_H__

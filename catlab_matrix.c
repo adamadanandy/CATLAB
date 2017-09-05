@@ -1,7 +1,160 @@
 #include <catlab_matrix.h>
 
+void cat_zmat_AXPBY(double _Complex a, ptr_cat_zmat matx,
+    double _Complex b, ptr_cat_zmat maty) {
+    CAT_ASSERT(matx->datatype == CAT_Z && maty->datatype == CAT_Z);
+    CAT_ASSERT(matx->lshape == 2 && maty->lshape == 2);
+    CAT_ASSERT(matx->shape[0] == maty->shape[0]);
+    CAT_ASSERT(matx->shape[1] == maty->shape[1]);
+    cat_zcscaxpby(matx->shape[1], &a, matx->data, matx->ptrind1, matx->ptrind2,
+        &b, &(maty->data), &(maty->ptrind1), &(maty->ptrind2));
+    maty->ldata = maty->ptrind1[10];
+}
+void cat_zmat_matrixCC2GE(ptr_cat_zmat tmat)
+{
+    double _Complex *newdata;
+    int itri,itrj;
+    int m,n;
+    CAT_ASSERT(tmat->datatype == CAT_Z);
+    m = tmat->shape[0];
+    n = tmat->shape[1];
+    newdata = malloc(sizeof(double _Complex)*m*n);
+    memset(newdata,0,sizeof(double _Complex)*m*n);
 
+    for (itri = 0; itri < n; itri++) {
+        for (itrj = tmat->ptrind1[itri]; itrj < tmat->ptrind1[itri+1]; itrj++) {
+            newdata[itri*m+tmat->ptrind2[itrj]] = tmat->data[itrj];
+        }
+    }
+    free(tmat->data);
+    free(tmat->ptrind1);
+    free(tmat->ptrind2);
+    tmat->ptrind1 = NULL;
+    tmat->ptrind2 = NULL;
+    tmat->data = newdata;
+    tmat->matrixtype = CAT_GEM;
+    tmat->ldata = n*m;
+}
 
+ptr_cat_mat cat_CSCMatConstructor(cat_flag matdatatype, int row, int col, 
+            int* ai, int* aj, void* av) {
+    ptr_cat_mat rtmat;
+    rtmat = malloc(sizeof(cat_mat));
+    memset(rtmat,0,sizeof(cat_mat));
+    rtmat->lshape = 2;
+    rtmat->shape = malloc(sizeof(int)*2);
+    rtmat->shape[0] = row;
+    rtmat->shape[1] = col;
+    rtmat->ldata = ai[col];
+    rtmat->ptrind1 = malloc(sizeof(int)*(col+1));
+    rtmat->ptrind2 = malloc(sizeof(int)*rtmat->ldata);
+    rtmat->datatype = matdatatype;
+    rtmat->matrixtype = CAT_CSC;
+    rtmat->data = malloc(CAT_SIZEOF(matdatatype)*rtmat->ldata);
+    memcpy(rtmat->ptrind1,ai,sizeof(int)*(col+1));
+    memcpy(rtmat->ptrind2,aj,sizeof(int)*rtmat->ldata);
+    memcpy(rtmat->data,av,CAT_SIZEOF(matdatatype)*rtmat->ldata);
+    return rtmat;
+}
+
+/*sparse blas like routine: y=ax+by*/
+void cat_zcscaxpby(int m, const void* alpha,
+    const cat_z *x, const int *ix, const int *jx, const void* beta,
+    cat_z **y, int **iy, int** jy) {
+    
+    int *newi,*newj;
+    double _Complex *newv;
+    int *io,*jo;
+    double _Complex *o;
+    int itri,itrj,itrk,itrl;
+    double _Complex a,b;
+    
+    io = *iy;
+    jo = *jy;
+    o  = *y;
+    a = *((double _Complex*)alpha);
+    b = *((double _Complex*)beta);
+    newi = malloc(sizeof(int)*(m+1));
+    memset(newi,0,sizeof(int)*(m+1));
+    newi[0] = 0;
+    itri = 0;
+    newj = malloc(sizeof(int)*(ix[m]+io[m]));
+    memset(newj,0,sizeof(int)*(ix[m]+io[m]));
+    itrj = 0;
+    newv = malloc(sizeof(double _Complex)*(ix[m]+io[m]));
+    memset(newv,0,sizeof(double _Complex)*(ix[m]+io[m]));
+    itrk = 0;
+    itrl = 0;
+    for (itri = 0; itri < m; itri++) {
+        while (itrk < ix[itri+1] ||
+                itrl < io[itri+1]) {
+            if (itrk < ix[itri+1] && itrl < io[itri+1] && jx[itrk] == jo[itrl]) {
+                newj[itrj] = jx[itrk];
+                newv[itrj] = a*x[itrk]+b*o[itrl];
+                itrk++;
+                itrl++;
+                itrj++;
+            }
+            else if (itrl == io[itri+1] ||
+                (itrk < ix[itri+1] && jx[itrk] < jo[itrl])) {
+                newj[itrj] = jx[itrk];
+                newv[itrj] = a*x[itrk];
+                itrk++;
+                itrj++;
+            }
+            else {
+                newj[itrj] = jo[itrl];
+                newv[itrj] = b*o[itrl];
+                itrl++;
+                itrj++;
+            }
+        }
+        newi[itri+1] = itrj;
+    }
+    itrl = newi[m];
+    if (itrl < (ix[m]+io[m])) {
+        newj = realloc(newj,sizeof(int)*itrl);
+        newv = realloc(newv,sizeof(double _Complex)*itrl);
+    }
+    free(*y);
+    free(*iy);
+    free(*jy);
+    *y = newv;
+    *iy = newi;
+    *jy = newj;
+}
+/*sparse blas routine*/
+void cat_zcscgemv(CBLAS_TRANSPOSE TransA, int m,
+    const cat_z *a, const int *ia, const int *ja,
+    const cat_z *x, cat_z* y)
+{
+    int itri,itrj;
+    if (TransA == CblasNoTrans) {
+        memset(y,0,sizeof(cat_z)*m);
+        for (itri = 0; itri < m; itri++) {
+            for (itrj = ia[itri]; itrj < ia[itri+1]; itrj++) {
+                y[ja[itrj]] += a[itrj]*x[itri];
+            }
+        }
+    }
+    else if (TransA == CblasTrans) {
+        memset(y,0,sizeof(cat_z)*m);
+        for (itri = 0; itri < m; itri++) {
+            for (itrj = ia[itri]; itrj < ia[itri+1]; itrj++) {
+                y[itri] += a[itrj]*x[ja[itrj]];
+            }
+        }
+    }
+    else if (TransA == CblasConjTrans) {
+        memset(y,0,sizeof(cat_z)*m);
+        for (itri = 0; itri < m; itri++) {
+            for (itrj = ia[itri]; itrj < ia[itri+1]; itrj++) {
+                y[itri] += CAT_CONJ(a[itrj])*x[ja[itrj]];
+            }
+        }
+    }
+}
+/*catlab routine*/
 void cat_matz_csc_mldivide(ptr_cat_zmat matA,
         cat_z* ivec, cat_z* ovec, ptr_cat_workspace pworkspace)
 {
@@ -39,7 +192,44 @@ void cat_matz_csc_mldivide(ptr_cat_zmat matA,
         pworkspace->Control, pworkspace->Info);
 }
 
-ptr_cat_workspace cat_matz_csc_mldivide_alloc()
+void cat_matd_csc_mldivide(ptr_cat_zmat matA,
+        cat_z* ivec, cat_z* ovec, ptr_cat_workspace pworkspace)
+{
+    int row,col;
+    
+    row = matA->shape[0];
+    col = matA->shape[1];
+    pworkspace->umftype = CAT_D;
+    CAT_ASSERT(matA->datatype == CAT_D && matA->matrixtype == CAT_CSC);
+    if (pworkspace->isreuse != CAT_TRUE && pworkspace->Symbolic != NULL) {
+        umfpack_di_free_symbolic(&(pworkspace->Symbolic));
+        pworkspace->Symbolic = NULL;
+    }
+    if (pworkspace->Symbolic == NULL) {
+        umfpack_di_symbolic(row, col, matA->ptrind1, matA->ptrind2,
+            (double*)matA->data, &(pworkspace->Symbolic),
+            pworkspace->Control, pworkspace->Info);
+    }
+    if (pworkspace->isreuse != CAT_TRUE && pworkspace->Numeric != NULL) {
+        umfpack_di_free_numeric(&(pworkspace->Numeric));
+        pworkspace->Numeric = NULL;
+    }
+    if (pworkspace->Numeric == NULL) {
+        umfpack_di_numeric(matA->ptrind1, matA->ptrind2,
+            (double*)matA->data, pworkspace->Symbolic,
+            &(pworkspace->Numeric), pworkspace->Control,
+            pworkspace->Info);
+    }
+    //Just prepare a solver, don't solve.
+    if (ivec == NULL) {
+        return;
+    }
+    umfpack_di_solve(UMFPACK_A, matA->ptrind1, matA->ptrind2,
+        (double*)matA->data, (double*)ovec, (double*)ivec,
+        pworkspace->Numeric, pworkspace->Control, pworkspace->Info);
+}
+
+ptr_cat_workspace cat_mat_csc_mldivide_alloc()
 {
     ptr_cat_workspace rtspace;
     rtspace = malloc(sizeof(cat_workspace));
@@ -47,7 +237,7 @@ ptr_cat_workspace cat_matz_csc_mldivide_alloc()
     return rtspace;
 }
 
-void cat_matz_csc_mldivide_dealloc(ptr_cat_workspace psp)
+void cat_mat_csc_mldivide_dealloc(ptr_cat_workspace psp)
 {
     if (psp->Symbolic != NULL) {
         if (psp->umftype == CAT_UMFPACK_DI) {
@@ -88,8 +278,8 @@ ptr_cat_mat cat_matrixDuplicate(ptr_cat_mat smat)
     if (smat->ptrind1 != NULL) {
         if (smat->matrixtype == CAT_CSC) {
             //CSC matrix short ind array
-            tmat->ptrind1 = malloc(sizeof(int)*tmat->shape[0]);
-            memcpy(tmat->ptrind1,smat->ptrind1,sizeof(int)*tmat->shape[0]);
+            tmat->ptrind1 = malloc(sizeof(int)*(tmat->shape[0]+1));
+            memcpy(tmat->ptrind1,smat->ptrind1,sizeof(int)*(tmat->shape[0]+1));
         }
         else {
             printf("Not Supported\n");
@@ -165,6 +355,10 @@ void cat_matrixDestructor(cat_mat **pptrmat)
     }
     if ((*pptrmat)->data != NULL) {
         free((*pptrmat)->data);
+    }
+    if ((*pptrmat)->matrixtype == CAT_CSC) {
+        free((*pptrmat)->ptrind1);
+        free((*pptrmat)->ptrind2);
     }
     free(*pptrmat);
     *pptrmat = NULL;    

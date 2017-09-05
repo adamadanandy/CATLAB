@@ -33,6 +33,7 @@ typedef lapack_complex_double cat_z;
 //#define CAT_IMAG(x) (x).imag
 #define CAT_REAL(x) creal(x)
 #define CAT_IMAG(x) cimag(x) 
+#define CAT_CONJ(x) conj(x)
 
 #define CAT_SIZEOF(x) (                                         \
                 ((x) == CAT_D) ? CAT_SIZEOF_D : (               \
