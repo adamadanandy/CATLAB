@@ -1,2 +1,27 @@
-gcc -I/home/yyli/staticlib/cblas/include/ -I/home/yyli/staticlib/lapacke/include/ -I./ -c catlab_eig.c
-gcc test_eig.o catlab_eig.o /home/yyli/staticlib/lapacke/liblapacke.a /home/yyli/staticlib/lapack/liblapack.a /home/yyli/staticlib/cblas/libcblas.a /home/yyli/staticlib/blas/librefblas.a -lgfortran -lm -o test_eig
+
+
+
+CBLASLIB = $(HOME)/lib
+LAPACKLIB = $(HOME)/lib
+UMFPACKLIB = $(HOME)/lib
+ARPACKLIB = $(HOME)/lib
+
+CBLASINC   = $(HOME)/include
+LAPACKEINC = $(HOME)/include
+UMFPACKINC = $(HOME)/include
+
+INCLUDES = -I$(CBLASINC) -I$(LAPACKEINC) -I$(UMFPACKINC) -I../include
+
+CC = gcc
+CFLAGS = -Wall -g
+LDDIR = -L.. -L$(CBLASLIB) -L$(LAPACKLIB) -L$(UMFPACKLIB) -L$(ARPACKLIB)
+LDFLAGS = -lcatlab -lopenblas -llapack -larpack -lumfpack -lgfortran -lm -pthread
+
+.SUFFIXES:
+.SUFFIXES: .c .o
+
+%.o: %.c
+	${CC} -c ${CFLAGS} ${INCLUDES} $<
+
+%: %.o
+	${CC} $< ${LDDIR} ${LDFLAGS}  -o $@

@@ -3,7 +3,7 @@
 int main(int argc, char** argv)
 {
     ptr_cat_zmat mymat;
-    int itri,itrj;
+    int itri;
     double _Complex ivec[10], ovec[10];
     mymat = (ptr_cat_zmat)cat_BMatConstructor(CAT_Z, 10, 10, 2, 3);
     for (itri = 0; itri < 10; itri++) {

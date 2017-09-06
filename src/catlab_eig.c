@@ -691,7 +691,6 @@ cat_bool cat_zmat_geigs(ptr_cat_zmat mata, ptr_cat_zmat matb,
     scaleB = cblas_dznrm2(cpmat2->ptrind1[ndim],cpmat2->data,1)/sqrt(ndim);
     //scaleB = 2^(floor(log2(scaleB+1)))
     scaleB = exp2((int)(log2(scaleB+1)));
-    printf("scaleB=%g\n",scaleB);
     invscaleB = 1.0/scaleB;
     //cpmat2 = cpmat2/scaleB
     cblas_zscal(cpmat2->ptrind1[ndim],&invscaleB, cpmat2->data, 1);
