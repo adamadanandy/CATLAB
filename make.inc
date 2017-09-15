@@ -15,7 +15,7 @@ INCLUDES = -I$(CBLASINC) -I$(LAPACKEINC) -I$(UMFPACKINC) -I../include
 CC = gcc
 CFLAGS = -Wall -g
 LDDIR = -L.. -L$(CBLASLIB) -L$(LAPACKLIB) -L$(UMFPACKLIB) -L$(ARPACKLIB)
-LDFLAGS = -lcatlab -lopenblas -llapack -larpack -lumfpack -lgfortran -lm -pthread
+LDFLAGS = -lcatlab -lopenblas -llapack -larpack -lumfpack -lmachcon -lamos -lgfortran -lm -pthread
 
 .SUFFIXES:
 .SUFFIXES: .c .o

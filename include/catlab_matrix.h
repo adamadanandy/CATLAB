@@ -103,8 +103,11 @@ typedef struct _tagCatZMatrix {
     int                     *ptrind2;
 } cat_zmat, *ptr_cat_zmat;
 
-
-void cat_zmat_AXPBY(double _Complex a, ptr_cat_zmat matx,
+void cat_zmat_gbm_AXPBY(double _Complex a, ptr_cat_zmat matx,
+                double _Complex b, ptr_cat_zmat maty);
+void cat_zmat_gbm_Adjust(ptr_cat_zmat pmat, int newku, int newkl);
+void cat_zmat_SCALE(ptr_cat_zmat pmat, double _Complex alpha);
+void cat_zmat_csc_AXPBY(double _Complex a, ptr_cat_zmat matx,
             double _Complex b, ptr_cat_zmat maty);
 void cat_zmat_matrixCC2GE(ptr_cat_zmat tmat);
 ptr_cat_mat cat_CSCMatConstructor(cat_flag matdatatype, int row, int col, 

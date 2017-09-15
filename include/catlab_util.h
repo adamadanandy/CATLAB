@@ -3,14 +3,19 @@
 
 //#include <mkl_cblas.h>
 //#include <mkl_lapacke.h>
+#include <math.h>
 #include <cblas.h>
 #include <lapacke.h>
 #include <string.h>
 #include <complex.h>
 
-#define CAT_UNKNOWN  0
-#define CAT_TRUE     1
-#define CAT_FALSE    -1
+#ifndef PI
+#define PI             3.14159265358979323846264338327950288419716939937510
+#endif//PI
+
+#define CAT_UNKNOWN     0
+#define CAT_TRUE        1
+#define CAT_FALSE       -1
 
 #define CAT_S           0x00000000
 #define CAT_D           0x00000001

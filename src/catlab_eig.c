@@ -686,7 +686,7 @@ cat_bool cat_zmat_geigs(ptr_cat_zmat mata, ptr_cat_zmat matb,
         cat_zmat_matrixGB2CC(cpmat2);
     }
     //cpmat1 = cpmat1-sigma*cpmat2
-    cat_zmat_AXPBY(-sigma, cpmat2, 1.0, cpmat1);
+    cat_zmat_csc_AXPBY(-sigma, cpmat2, 1.0, cpmat1);
     //scaleB = norm2(B=>vector)/sqrt(ndim)
     scaleB = cblas_dznrm2(cpmat2->ptrind1[ndim],cpmat2->data,1)/sqrt(ndim);
     //scaleB = 2^(floor(log2(scaleB+1)))

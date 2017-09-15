@@ -82,7 +82,7 @@ int main(int argc, char** argv)
 //    cat_zcscaxpby(10, &alpha, rmat->data, rmat->ptrind1, rmat->ptrind2,
 //        &beta, &(omat->data), &(omat->ptrind1), &(omat->ptrind2));
 //    omat->ldata = omat->ptrind1[10];
-    cat_zmat_AXPBY(alpha, rmat, beta, omat);
+    cat_zmat_csc_AXPBY(alpha, rmat, beta, omat);
     cat_zmat_matrixCC2GE(omat);
     CAT_MATRIX_PRINT(omat);
 }

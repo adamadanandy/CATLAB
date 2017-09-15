@@ -11,5 +11,6 @@
 #include <catlab_util.h>
 #include <catlab_matrix.h>
 #include <catlab_eig.h>
+#include <catlab_specfunc.h>
 
 #endif//__CATLAB_H__

@@ -1,6 +1,54 @@
 #include <catlab_matrix.h>
 
-void cat_zmat_AXPBY(double _Complex a, ptr_cat_zmat matx,
+void cat_zmat_gbm_AXPBY(double _Complex a, ptr_cat_zmat matx,
+                double _Complex b, ptr_cat_zmat maty)
+{
+    int maxkl, maxku;
+    cat_zmat_SCALE(maty,b);
+    if (maty->kl != matx->kl || maty->ku != matx->ku) {
+        maxkl = CAT_MAX(matx->kl,maty->kl);
+        maxku = CAT_MAX(matx->ku,maty->ku);
+        cat_zmat_gbm_Adjust(matx,maxku,maxkl);
+        cat_zmat_gbm_Adjust(maty,maxku,maxkl);
+    }
+    cblas_zaxpy(matx->ldata,&a,matx->data,1,maty->data,1);
+}
+
+void cat_zmat_gbm_Adjust(ptr_cat_zmat pmat, int newku, int newkl)
+{
+    double _Complex *ptrdata;
+    int lcol;
+    int itri,itrj,ofst;
+    if (pmat->ku == newku && pmat->kl == newkl) {
+        return;
+    }
+    if (pmat->ku > newku || pmat->kl > newkl) {
+        printf("ILLEGAL\n");
+        return;
+    }
+    lcol = pmat->shape[1];
+    ptrdata = malloc(sizeof(double _Complex)*(newku+newkl+1)*lcol);
+    memset(ptrdata,0,sizeof(double _Complex)*(newku+newkl+1)*lcol);
+    for (itrj = 0; itrj < lcol; itrj++) {
+        ofst = newku - pmat->ku;
+        for (itri = 0; itri < pmat->ku+pmat->kl+1; itri++) {
+            ptrdata[itri+ofst+itrj*(newku+newkl+1)] = pmat->data[itri+itrj*(pmat->ku+pmat->kl+1)];
+        }
+    }
+    
+    free(pmat->data);
+    pmat->data = ptrdata;
+    pmat->ldata = (newku+newkl+1)*lcol;
+    pmat->ku = newku;
+    pmat->kl = newkl;
+}
+
+void cat_zmat_SCALE(ptr_cat_zmat pmat, double _Complex alpha)
+{
+    cblas_zscal(pmat->ldata,&alpha,pmat->data,1);
+}
+
+void cat_zmat_csc_AXPBY(double _Complex a, ptr_cat_zmat matx,
     double _Complex b, ptr_cat_zmat maty) {
     CAT_ASSERT(matx->datatype == CAT_Z && maty->datatype == CAT_Z);
     CAT_ASSERT(matx->lshape == 2 && maty->lshape == 2);
@@ -258,7 +306,7 @@ void cat_mat_csc_mldivide_dealloc(ptr_cat_workspace psp)
     free(psp);
 }
 
-ptr_cat_mat cat_matrixDuplicate(ptr_cat_mat smat) 
+ptr_cat_mat cat_matrixDuplicate(ptr_cat_mat smat)
 {
     ptr_cat_mat tmat;
     CAT_ASSERT(smat->bPrepared == CAT_TRUE);
