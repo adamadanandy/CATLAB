@@ -1,5 +1,13 @@
 #include <catlab_matrix.h>
 
+ptr_cat_mat cat_EmptyMatConstructor()
+{
+    ptr_cat_mat rtmat;
+    rtmat = malloc(sizeof(cat_mat));
+    memset(rtmat,0,sizeof(cat_mat));
+    return rtmat;
+}
+
 void cat_zmat_gbm_AXPBY(double _Complex a, ptr_cat_zmat matx,
                 double _Complex b, ptr_cat_zmat maty)
 {

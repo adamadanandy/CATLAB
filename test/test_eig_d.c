@@ -8,8 +8,8 @@ int main(int argc, char** argv)
     int matshape[2] = {10,10};
     int itri,itrj;
     ptr_cat_zmat dmat,vmat;
-    dmat = malloc(sizeof(cat_mat));
-    vmat = malloc(sizeof(cat_mat));
+    dmat = (ptr_cat_zmat)cat_EmptyMatConstructor();
+    vmat = (ptr_cat_zmat)cat_EmptyMatConstructor();
     pmat = (ptr_cat_dmat)cat_GMatConstructor(CAT_D,2,matshape);
     for (itri = 0; itri < 10; itri++) {
         for (itrj = 0; itrj < 10; itrj++) {
