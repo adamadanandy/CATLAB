@@ -4,9 +4,9 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-//#include <mkl_cblas.h>
+#include <mkl_cblas.h>
 //#include <mkl_lapacke.h>
-#include <cblas.h>
+//#include <cblas.h>
 #include <lapacke.h>
 #include <catlab_util.h>
 #include <catlab_matrix.h>

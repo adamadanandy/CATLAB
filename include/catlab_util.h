@@ -1,10 +1,10 @@
 #ifndef __CATLAB_UTIL_H__
 #define __CATLAB_UTIL_H__
 
-//#include <mkl_cblas.h>
+#include <mkl_cblas.h>
 //#include <mkl_lapacke.h>
 #include <math.h>
-#include <cblas.h>
+//#include <cblas.h>
 #include <lapacke.h>
 #include <string.h>
 #include <complex.h>

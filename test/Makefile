@@ -1,6 +1,6 @@
 include ../make.inc
 
-EXE = test_eig_d test_eig_z test_geig_d test_geig_z test_matmul test_gbmat test_ccmat test_eigs_z
+EXE = test_eig_d test_eig_z test_geig_d test_geig_z test_geigs_z test_matmul test_gbmat test_ccmat test_eigs_z test_specfunc
 
 test: $(EXE)
 
@@ -12,6 +12,8 @@ test_geig_d: test_geig_d.o
 
 test_geig_z: test_geig_z.o
 
+test_geigs_z: test_geigs_z.o
+
 test_matmul: test_matmul.o
 
 test_gbmat: test_gbmat.o
@@ -19,6 +21,8 @@ test_gbmat: test_gbmat.o
 test_ccmat: test_ccmat.o
 
 test_eigs_z: test_eigs_z.o
+
+test_specfunc: test_specfunc.o
 
 clean:
 	-rm *.o

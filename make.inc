@@ -6,16 +6,16 @@ LAPACKLIB = $(HOME)/lib
 UMFPACKLIB = $(HOME)/lib
 ARPACKLIB = $(HOME)/lib
 
-CBLASINC   = $(HOME)/include
+CBLASINC   = /usr/local/intel/Compiler/11.1/ifort/mkl/include 
 LAPACKEINC = $(HOME)/include
 UMFPACKINC = $(HOME)/include
 
 INCLUDES = -I$(CBLASINC) -I$(LAPACKEINC) -I$(UMFPACKINC) -I../include
 
-CC = gcc
-CFLAGS = -Wall -g
-LDDIR = -L.. -L$(CBLASLIB) -L$(LAPACKLIB) -L$(UMFPACKLIB) -L$(ARPACKLIB)
-LDFLAGS = -lcatlab -lopenblas -llapack -larpack -lumfpack -lmachcon -lamos -lgfortran -lm -pthread
+CC = icc
+CFLAGS = -g 
+LDDIR = -L.. -L$(CBLASLIB) -L$(LAPACKLIB) -L$(UMFPACKLIB) -L$(ARPACKLIB) -L/usr/local/intel/Compiler/11.1/ifort/lib/intel64
+LDFLAGS = -lcatlab -llapacke -larpack -lumfpack -lamos -lmachcon -lifcore -lifport -lm -lpthread -mkl
 
 .SUFFIXES:
 .SUFFIXES: .c .o

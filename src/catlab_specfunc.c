@@ -62,7 +62,7 @@ double cat_d_besselj(double nu, double z)
     static int n, kode, nz, ierr;
     double rtval, dache;
     n = nu;
-    if ((double)n == nu && CAT_IMAG(z) == 0) {
+    if ((double)n == nu) {
         if (n == 0) {
             rtval = dbesj0_(&z);
         }
